@@ -1,0 +1,55 @@
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider        = "prisma-client-js"
+}
+
+
+enum IssueCategory {
+  ROAD
+  PARK
+  PARKING
+  LIBRARY
+  INFRASTRUCTURE
+  SAFETY
+  OTHER
+}
+
+
+enum IssueStatus {
+  PENDING
+  IN_PROGRESS
+  RESOLVED
+}
+
+model Issue {
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  category    IssueCategory
+  latitude    Float
+  longitude   Float
+  imageUrls   String[]
+  status      IssueStatus   @default(PENDING)
+  creatorId   String        @db.ObjectId
+  creator     User          @relation("IssuesCreated", fields: [creatorId], references: [id])
+  upvotes     String[]      @db.ObjectId
+  downvotes   String[]      @db.ObjectId
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+
+
+model User {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  email         String   @unique
+  password      String
+  displayName   String?
+  avatarUrl     String?
+  createdAt     DateTime @default(now())
+  issuesCreated Issue[]        @relation("IssuesCreated")
+}
