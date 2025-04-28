@@ -1,11 +1,20 @@
 const express = require("express");
 const router = express.Router();
 const { protect } = require("../middleware/auth.middleware.js");
-// const { createIssue, getIssues } = require("../services/issues.service");
+const { createIssue, getIssues } = require("../services/issues.service");
 
 // create issue
 router.post("/", protect, async (req, res) => {
   try {
+    // Validate required fields
+    const { title, description, category, location } = req.body;
+    if (!title || !description || !category || !location) {
+      return res.status(400).json({
+        success: false,
+        message: "Required fields: title, description, category, location"
+      });
+    }
+
     const issue = await createIssue({ ...req.body, creatorId: req.user.id });
     return res.status(201).json({ success: true, data: issue });
   } catch (error) {

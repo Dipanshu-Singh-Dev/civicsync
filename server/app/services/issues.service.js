@@ -7,24 +7,25 @@ const prisma = new PrismaClient();
 async function createIssue({
   title,
   description,
-  type,
-  startTime,
-  endTime,
-  maxParticipants,
-  tag,
-  userId
+  category,
+  location,
+  picture1,
+  picture2,
+  picture3,
+  creatorId
 }) {
+  const imageUrls = [picture1, picture2, picture3].filter(Boolean);
+  console.log("Image urls", imageUrls);
   return await prisma.issue.create({
     data: {
       title,
       description,
-      type,
-      startTime: new Date(startTime),
-      endTime: new Date(endTime),
-      maxParticipants: maxParticipants ? Number(maxParticipants) : undefined,
-      tag,
-      creator: { connect: { id: userId } },
-      participants: { create: { user: { connect: { id: userId } } } }
+      category,
+      location,
+      imageUrls,
+      creatorId,
+      upvotes: [],
+      downvotes: []
     }
   });
 }
@@ -33,20 +34,20 @@ async function createIssue({
  * Fetch public issues and private issues for the user
  */
 async function getIssues(userId) {
-  const publicIssues = await prisma.issue.findMany({
-    where: { type: "PUBLIC" },
-    orderBy: { startTime: "asc" }
-  });
-
-  const privateIssues = await prisma.issue.findMany({
-    where: {
-      type: "PRIVATE",
-      OR: [{ userId }, { participants: { some: { userId: userId } } }]
+  // Get all issues, sorted by most recent first
+  const issues = await prisma.issue.findMany({
+    include: {
+      creator: {
+        select: {
+          email: true,
+          displayName: true
+        }
+      }
     },
-    orderBy: { startTime: "asc" }
+    orderBy: { createdAt: "desc" }
   });
 
-  return { publicIssues, privateIssues };
+  return issues;
 }
 
 module.exports = { createIssue, getIssues };

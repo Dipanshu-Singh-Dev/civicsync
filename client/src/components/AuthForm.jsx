@@ -46,8 +46,7 @@ const AuthForm = ({
   alternateActionText,
   alternateActionLink,
   onSubmit,
-  isLoading = false,
-  error = null
+  isLoading = false
 }) => {
   const navigate = useNavigate();
   const formSchema = createFormSchema();
@@ -73,12 +72,6 @@ const AuthForm = ({
           <CardDescription>{description}</CardDescription>
         </CardHeader>
         <CardContent>
-          {error && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(handleSubmit)}

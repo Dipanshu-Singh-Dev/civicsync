@@ -2,14 +2,14 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthForm from "@/components/AuthForm";
 import { signup } from "@/services/auth.service";
+import { toast } from "sonner";
+
 const Signup = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   const handleSignup = async (_, formData) => {
     setIsLoading(true);
-    setError(null);
 
     try {
       // Call signup with email
@@ -20,10 +20,11 @@ const Signup = () => {
       // Store only email in localStorage
       localStorage.setItem("user", JSON.stringify({ email: formData.email }));
 
+      toast.success("Account created successfully");
       // Navigate to home page after successful signup
       navigate("/");
     } catch (err) {
-      setError(
+      toast.error(
         err.message ||
           "Registration failed. Please try again with a different email."
       );
@@ -41,7 +42,6 @@ const Signup = () => {
       alternateActionLink="/"
       onSubmit={handleSignup}
       isLoading={isLoading}
-      error={error}
     />
   );
 };

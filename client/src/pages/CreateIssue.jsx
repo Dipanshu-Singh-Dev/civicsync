@@ -112,16 +112,12 @@ const CreateIssue = () => {
       console.log("Data with pictures converted to data URLs:", processedData);
       // Note: The subsequent call to createIssue should use processedData
       // e.g., const issue = await createIssue(processedData);
-      const issue = await createIssue(data);
+      const issue = await createIssue(processedData);
       console.log("Issue created:", issue);
-      toast.success({
-        title: "Issue created successfully"
-      });
+      toast.success("Issue created successfully");
     } catch (error) {
       console.error("Error creating issue:", error);
-      toast.error({
-        title: "Error creating issue"
-      });
+      toast.error("Error creating issue");
     } finally {
       setLoading(false);
     }

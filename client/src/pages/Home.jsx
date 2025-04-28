@@ -1,9 +1,9 @@
 import React from "react";
-
+import IssueGrid from "@/components/IssueGrid";
 const Home = () => {
   return (
     <div>
-      <h1>Home Page</h1>
+      <IssueGrid />
     </div>
   );
 };
