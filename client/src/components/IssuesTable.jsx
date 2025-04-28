@@ -212,14 +212,22 @@ function IssuesTable({
                   <div className="flex justify-center space-x-2">
                     <button
                       onClick={() => onUpvote(issue.id)}
-                      className="text-blue-600 hover:text-blue-900"
+                      className={`${
+                        issue.upvoted
+                          ? "text-blue-800 bg-blue-100 rounded-full p-2"
+                          : "text-blue-600 hover:text-blue-900 p-2"
+                      }`}
                       title="Upvote"
                     >
                       <ThumbsUp size={18} />
                     </button>
                     <button
                       onClick={() => onDownvote(issue.id)}
-                      className="text-red-600 hover:text-red-900"
+                      className={`${
+                        issue.downvoted
+                          ? "text-red-800 bg-red-100 rounded-full p-2"
+                          : "text-red-600 hover:text-red-900 p-2"
+                      }`}
                       title="Downvote"
                     >
                       <ThumbsDown size={18} />

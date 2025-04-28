@@ -39,12 +39,34 @@ async function getIssues(userId) {
           email: true,
           displayName: true
         }
+      },
+      upvotes: {
+        where: {
+          voterId: userId
+        },
+        select: {
+          id: true
+        }
+      },
+      downvotes: {
+        where: {
+          voterId: userId
+        },
+        select: {
+          id: true
+        }
       }
     },
     orderBy: { createdAt: "desc" }
   });
 
-  return issues;
+  return issues.map((issue) => ({
+    ...issue,
+    upvoted: issue.upvotes.length > 0,
+    downvoted: issue.downvotes.length > 0,
+    upvotes: undefined, // Remove the upvotes array
+    downvotes: undefined // Remove the downvotes array
+  }));
 }
 
 /**
