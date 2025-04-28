@@ -65,7 +65,7 @@ const AuthForm = ({
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background">
+    <div className="flex items-center justify-center h-[80vh] bg-background">
       <Card className="w-[350px]">
         <CardHeader>
           <CardTitle>{title}</CardTitle>
