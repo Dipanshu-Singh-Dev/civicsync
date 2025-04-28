@@ -12,7 +12,9 @@
         "color": "terminal.ansiGreen",
         "cwd": "./client",
         "autoExecuteCommands": true,
-        "commands": ["npm run dev"]
+        "commands": [
+          "npm run dev"
+        ]
       },
       {
         "name": "server",
@@ -20,7 +22,9 @@
         "color": "terminal.ansiBlue",
         "cwd": "./server",
         "autoExecuteCommands": true,
-        "commands": ["npm run dev"]
+        "commands": [
+          "npm run dev"
+        ]
       }
     ]
   }

@@ -10,6 +10,11 @@ import {
   DialogTitle,
   DialogTrigger
 } from "@/components/ui/dialog";
+import LocationFilter from "./issues/LocationFilter";
+import Pagination from "./common/Pagination";
+import IssueStatusBadge from "./issues/IssueStatusBadge";
+import ImageGallery from "./common/ImageGallery";
+import IssueCardView from "./issues/IssueCardView";
 
 // Location options - assuming these match your schema
 const LOCATIONS = [
@@ -37,13 +42,7 @@ const formatLocation = (location) => {
 };
 
 /**
- * Renders a table displaying issue data with pagination and action buttons.
- * @param {Object} props - The component props.
- * @param {Array<Object>} props.issues - An array of issue objects.
- * @param {Object} props.currentUser - The currently logged in user object.
- * @param {Function} props.onUpvote - Callback when upvote button is clicked.
- * @param {Function} props.onDownvote - Callback when downvote button is clicked.
- * @param {Function} props.onDelete - Callback when delete button is clicked.
+ * Main Issues Table component
  */
 function IssuesTable({
   issues,
@@ -69,41 +68,25 @@ function IssuesTable({
   const endIndex = startIndex + itemsPerPage;
   const currentIssues = filteredIssues?.slice(startIndex, endIndex) || [];
 
-  // Pagination controls
-  const goToPage = (page) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-    }
-  };
   // Handle location filter change
-  const handleLocationChange = (e) => {
-    setLocationFilter(e.target.value);
+  const handleLocationChange = (value) => {
+    setLocationFilter(value);
     setCurrentPage(1); // Reset to first page when filter changes
+  };
+
+  // Format dates for display
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString();
   };
 
   return (
     <div className="container mx-auto p-4">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
         <h2 className="text-xl sm:text-2xl font-semibold">Issues List</h2>
-
-        {/* Location filter */}
-        <div className="flex items-center w-full sm:w-auto">
-          <label htmlFor="location-filter" className="mr-2 text-sm font-medium">
-            Filter by location:
-          </label>
-          <select
-            id="location-filter"
-            value={locationFilter}
-            onChange={handleLocationChange}
-            className="block w-full sm:w-auto rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-1.5"
-          >
-            {LOCATIONS.map((location) => (
-              <option key={location} value={location}>
-                {formatLocation(location)}
-              </option>
-            ))}
-          </select>
-        </div>
+        <LocationFilter
+          value={locationFilter}
+          onChange={handleLocationChange}
+        />
       </div>
 
       {/* Desktop Table - Hidden on small screens */}
@@ -158,20 +141,10 @@ function IssuesTable({
                     {issue.creator?.email || "N/A"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    {new Date(issue.createdAt).toLocaleDateString()}
+                    {formatDate(issue.createdAt)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        issue.status === "PENDING"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : issue.status === "IN_PROGRESS"
-                          ? "bg-blue-100 text-blue-800"
-                          : "bg-green-100 text-green-800"
-                      }`}
-                    >
-                      {issue.status}
-                    </span>
+                    <IssueStatusBadge status={issue.status} />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {issue.imageUrls?.length > 0 ? (
@@ -191,63 +164,39 @@ function IssuesTable({
                           <DialogHeader>
                             <DialogTitle>Issue Images</DialogTitle>
                           </DialogHeader>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {selectedImages.map((url, index) => (
-                              <div
-                                key={index}
-                                className="rounded-lg overflow-hidden"
-                              >
-                                <img
-                                  src={url}
-                                  alt={`Issue Image ${index + 1}`}
-                                  className="w-full h-auto object-cover"
-                                />
-                              </div>
-                            ))}
-                          </div>
+                          <ImageGallery images={selectedImages} />
                         </DialogContent>
                       </Dialog>
                     ) : (
-                      "No images"
+                      <span className="text-gray-400">None</span>
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
-                    <div className="flex justify-center space-x-2">
-                      <button
+                    <div className="flex items-center justify-center space-x-2">
+                      <Button
+                        variant={issue.upvoted ? "default" : "outline"}
+                        size="sm"
                         onClick={() => onUpvote(issue.id)}
-                        className={`${
-                          issue.upvoted
-                            ? "text-blue-800 bg-blue-100 rounded-full p-2"
-                            : "text-blue-600 hover:text-blue-900 p-2"
-                        }`}
-                        title="Upvote"
                       >
-                        <ThumbsUp size={18} />
-                      </button>
-                      <button
+                        <ThumbsUp size={16} />
+                      </Button>
+                      <Button
+                        variant={issue.downvoted ? "default" : "outline"}
+                        size="sm"
                         onClick={() => onDownvote(issue.id)}
-                        className={`${
-                          issue.downvoted
-                            ? "text-red-800 bg-red-100 rounded-full p-2"
-                            : "text-red-600 hover:text-red-900 p-2"
-                        }`}
-                        title="Downvote"
                       >
-                        <ThumbsDown size={18} />
-                      </button>
-
-                      {/* Only show delete button if user is creator and status is PENDING */}
-                      {currentUser &&
-                        issue.creatorId === currentUser.id &&
-                        issue.status === "PENDING" && (
-                          <button
-                            onClick={() => onDelete(issue.id)}
-                            className="text-gray-600 hover:text-gray-900"
-                            title="Delete"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        )}
+                        <ThumbsDown size={16} />
+                      </Button>
+                      {/* Only show delete button for creator */}
+                      {currentUser && issue.creatorId === currentUser.id && (
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => onDelete(issue.id)}
+                        >
+                          <Trash2 size={16} />
+                        </Button>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -258,185 +207,44 @@ function IssuesTable({
       </div>
 
       {/* Mobile Card View - Visible only on small screens */}
-      <div className="md:hidden space-y-4 mb-4 px-1">
+      <div className="md:hidden space-y-4">
         {currentIssues.length < 1 ? (
-          <div className="text-center p-4 bg-white rounded-lg border">
+          <div className="text-center p-4 border rounded-lg">
             No issues found
           </div>
         ) : (
           currentIssues.map((issue) => (
-            <div
+            <IssueCardView
               key={issue.id}
-              className="bg-white p-4 rounded-lg border shadow-sm"
-            >
-              <div className="flex justify-between items-start mb-3">
-                <h3 className="text-lg font-medium truncate max-w-[70%]">
-                  {issue.title}
-                </h3>
-                <span
-                  className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    issue.status === "PENDING"
-                      ? "bg-yellow-100 text-yellow-800"
-                      : issue.status === "IN_PROGRESS"
-                      ? "bg-blue-100 text-blue-800"
-                      : "bg-green-100 text-green-800"
-                  }`}
-                >
-                  {issue.status}
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3 text-sm">
-                <div className="overflow-hidden">
-                  <span className="text-gray-500">Category:</span>{" "}
-                  <span className="truncate">{issue.category}</span>
-                </div>
-                <div className="overflow-hidden">
-                  <span className="text-gray-500">Location:</span>{" "}
-                  <span className="truncate">
-                    {formatLocation(issue.location)}
-                  </span>
-                </div>
-                <div className="overflow-hidden">
-                  <span className="text-gray-500">Created:</span>{" "}
-                  <span className="truncate">
-                    {new Date(issue.createdAt).toLocaleDateString()}
-                  </span>
-                </div>
-                <div className="overflow-hidden">
-                  <span className="text-gray-500">By:</span>{" "}
-                  <span className="truncate">
-                    {issue.creator?.email || "N/A"}
-                  </span>
-                </div>
-              </div>
-
-              {/* Images */}
-              {issue.imageUrls?.length > 0 ? (
-                <div className="mb-3">
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex items-center w-full justify-center text-blue-600"
-                        onClick={() => setSelectedImages(issue.imageUrls)}
-                      >
-                        <ImageIcon size={16} className="mr-1" />
-                        <span>View Images ({issue.imageUrls.length})</span>
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
-                      <DialogHeader>
-                        <DialogTitle>Issue Images</DialogTitle>
-                      </DialogHeader>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {selectedImages.map((url, index) => (
-                          <div
-                            key={index}
-                            className="rounded-lg overflow-hidden"
-                          >
-                            <img
-                              src={url}
-                              alt={`Issue Image ${index + 1}`}
-                              className="w-full h-auto object-cover"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-              ) : null}
-
-              {/* Actions */}
-              <div className="flex justify-center space-x-3 pt-2 border-t">
-                <button
-                  onClick={() => onUpvote(issue.id)}
-                  className={`flex items-center justify-center ${
-                    issue.upvoted
-                      ? "text-blue-800 bg-blue-100 rounded-full p-2"
-                      : "text-blue-600 hover:text-blue-900 p-2"
-                  }`}
-                  title="Upvote"
-                >
-                  <ThumbsUp size={16} />
-                  <span className="sr-only sm:not-sr-only sm:ml-1 text-xs sm:text-sm">
-                    Upvote
-                  </span>
-                </button>
-                <button
-                  onClick={() => onDownvote(issue.id)}
-                  className={`flex items-center justify-center ${
-                    issue.downvoted
-                      ? "text-red-800 bg-red-100 rounded-full p-2"
-                      : "text-red-600 hover:text-red-900 p-2"
-                  }`}
-                  title="Downvote"
-                >
-                  <ThumbsDown size={16} />
-                  <span className="sr-only sm:not-sr-only sm:ml-1 text-xs sm:text-sm">
-                    Downvote
-                  </span>
-                </button>
-
-                {/* Only show delete button if user is creator and status is PENDING */}
-                {currentUser &&
-                  issue.creatorId === currentUser.id &&
-                  issue.status === "PENDING" && (
-                    <button
-                      onClick={() => onDelete(issue.id)}
-                      className="flex items-center justify-center text-gray-600 hover:text-gray-900 p-2"
-                      title="Delete"
-                    >
-                      <Trash2 size={16} />
-                      <span className="sr-only sm:not-sr-only sm:ml-1 text-xs sm:text-sm">
-                        Delete
-                      </span>
-                    </button>
-                  )}
-              </div>
-            </div>
+              issue={issue}
+              onUpvote={onUpvote}
+              onDownvote={onDownvote}
+              onDelete={onDelete}
+              currentUser={currentUser}
+              onViewImages={setSelectedImages}
+            />
           ))
         )}
       </div>
 
-      {/* Pagination controls */}
+      {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex justify-center mt-4 space-x-2">
-          <button
-            onClick={() => goToPage(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="px-3 py-1 rounded bg-gray-200 disabled:opacity-50"
-          >
-            Previous
-          </button>
-
-          <div className="flex flex-wrap space-x-1 max-w-[60vw] justify-center">
-            {[...Array(totalPages).keys()].map((num) => (
-              <button
-                key={num + 1}
-                onClick={() => goToPage(num + 1)}
-                className={`px-3 py-1 rounded ${
-                  currentPage === num + 1
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-200"
-                }`}
-              >
-                {num + 1}
-              </button>
-            ))}
-          </div>
-
-          <button
-            onClick={() => goToPage(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="px-3 py-1 rounded bg-gray-200 disabled:opacity-50"
-          >
-            Next
-          </button>
-        </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
       )}
+
+      {/* Description Dialog */}
+      <Dialog>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle id="description-dialog-title"></DialogTitle>
+          </DialogHeader>
+          <div id="description-dialog-content"></div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -1,5 +1,5 @@
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const issueRepository = require("../repositories/issue.repository");
+
 /**
  * Create a new issue and add the creator as a participant
  */
@@ -14,16 +14,13 @@ async function createIssue({
   creatorId
 }) {
   const imageUrls = [picture1, picture2, picture3].filter(Boolean);
-  console.log("Image urls", imageUrls);
-  return await prisma.issue.create({
-    data: {
-      title,
-      description,
-      category,
-      location,
-      imageUrls,
-      creatorId
-    }
+  return await issueRepository.createIssue({
+    title,
+    description,
+    category,
+    location,
+    imageUrls,
+    creatorId
   });
 }
 
@@ -32,43 +29,14 @@ async function createIssue({
  */
 async function getIssues(userId) {
   try {
-    // Get all issues without including creator (to avoid the null error)
-    const issues = await prisma.issue.findMany({
-      include: {
-        upvotes: {
-          where: {
-            voterId: userId
-          },
-          select: {
-            id: true
-          }
-        },
-        downvotes: {
-          where: {
-            voterId: userId
-          },
-          select: {
-            id: true
-          }
-        }
-      },
-      orderBy: { createdAt: "desc" }
-    });
+    // Get issues with vote status
+    const issues = await issueRepository.getIssuesWithVotes(userId);
 
     // Get all unique creator IDs from the issues
     const creatorIds = [...new Set(issues.map((issue) => issue.creatorId))];
 
-    // Fetch all creators in a single query
-    const creators = await prisma.user.findMany({
-      where: {
-        id: { in: creatorIds }
-      },
-      select: {
-        id: true,
-        email: true,
-        displayName: true
-      }
-    });
+    // Fetch creators
+    const creators = await issueRepository.getCreatorsByIds(creatorIds);
 
     // Create a lookup map for creators
     const creatorMap = {};
@@ -90,7 +58,7 @@ async function getIssues(userId) {
     }));
   } catch (error) {
     console.error("Error fetching issues:", error);
-    return [];
+    throw error;
   }
 }
 
@@ -99,9 +67,7 @@ async function getIssues(userId) {
  */
 async function deleteIssue(issueId, userId) {
   // First, check if the issue exists and the user is the creator
-  const issue = await prisma.issue.findUnique({
-    where: { id: issueId }
-  });
+  const issue = await issueRepository.getIssueById(issueId);
 
   if (!issue) {
     throw new Error("Issue not found");
@@ -116,9 +82,7 @@ async function deleteIssue(issueId, userId) {
   }
 
   // If all checks pass, delete the issue
-  return await prisma.issue.delete({
-    where: { id: issueId }
-  });
+  return await issueRepository.deleteIssue(issueId);
 }
 
 /**
@@ -127,44 +91,21 @@ async function deleteIssue(issueId, userId) {
  */
 async function upvoteIssue(issueId, userId) {
   // Check if user already upvoted
+  const existingUpvote = await issueRepository.findUpvote(issueId, userId);
 
-  console.log(prisma);
-  const existingUpvote = await prisma.upvote.findFirst({
-    where: {
-      issueId,
-      voterId: userId
-    }
-  });
   if (existingUpvote) {
     // Remove upvote
-    await prisma.upvote.delete({
-      where: { id: existingUpvote.id }
-    });
+    await issueRepository.deleteUpvote(existingUpvote.id);
   } else {
     // Remove any existing downvote
-    await prisma.downvote.deleteMany({
-      where: {
-        issueId,
-        voterId: userId
-      }
-    });
+    await issueRepository.deleteDownvotesByIssueAndVoter(issueId, userId);
+
     // Create new upvote
-    await prisma.upvote.create({
-      data: {
-        voterId: userId,
-        issueId
-      }
-    });
+    await issueRepository.createUpvote(userId, issueId);
   }
 
   // Return updated issue with vote counts
-  return await prisma.issue.findUnique({
-    where: { id: issueId },
-    include: {
-      upvotes: true,
-      downvotes: true
-    }
-  });
+  return await issueRepository.getIssueWithVotes(issueId);
 }
 
 /**
@@ -173,43 +114,21 @@ async function upvoteIssue(issueId, userId) {
  */
 async function downvoteIssue(issueId, userId) {
   // Check if user already downvoted
-  const existingDownvote = await prisma.downvote.findFirst({
-    where: {
-      issueId,
-      voterId: userId
-    }
-  });
+  const existingDownvote = await issueRepository.findDownvote(issueId, userId);
 
   if (existingDownvote) {
     // Remove downvote
-    await prisma.downvote.delete({
-      where: { id: existingDownvote.id }
-    });
+    await issueRepository.deleteDownvote(existingDownvote.id);
   } else {
     // Remove any existing upvote
-    await prisma.upvote.deleteMany({
-      where: {
-        issueId,
-        voterId: userId
-      }
-    });
+    await issueRepository.deleteUpvotesByIssueAndVoter(issueId, userId);
+
     // Create new downvote
-    await prisma.downvote.create({
-      data: {
-        voterId: userId,
-        issueId
-      }
-    });
+    await issueRepository.createDownvote(userId, issueId);
   }
 
   // Return updated issue with vote counts
-  return await prisma.issue.findUnique({
-    where: { id: issueId },
-    include: {
-      upvotes: true,
-      downvotes: true
-    }
-  });
+  return await issueRepository.getIssueWithVotes(issueId);
 }
 
 module.exports = {

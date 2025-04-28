@@ -1,10 +1,10 @@
-const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const userRepository = require("../repositories/user.repository");
 
-const prisma = new PrismaClient();
-
-// Cookie configuration for JWT - keep for backward compatibility
+/**
+ * Get cookie configuration for JWT
+ */
 const getTokenCookieOptions = () => {
   return {
     httpOnly: true, // Prevents client-side JS from reading the cookie
@@ -16,130 +16,82 @@ const getTokenCookieOptions = () => {
 };
 
 /**
- * User registration
+ * Generate JWT token for a user
  */
-exports.signup = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    // Check if user exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email }
-    });
-
-    if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: "User with this email already exists"
-      });
-    }
-
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const passwordHash = await bcrypt.hash(password, salt);
-
-    // Create user
-    const newUser = await prisma.user.create({
-      data: {
-        email,
-        password: passwordHash
-      }
-    });
-
-    // Generate token
-    const token = jwt.sign({ userId: newUser.id }, process.env.JWT_SECRET, {
-      expiresIn: "7d"
-    });
-
-    // Still set cookie for backward compatibility
-    res.cookie("token", token, getTokenCookieOptions());
-
-    res.status(201).json({
-      success: true,
-      message: "User registered successfully",
-      data: {
-        user: {
-          id: newUser.id,
-          email: newUser.email
-        },
-        token: token // Return token in response body
-      }
-    });
-  } catch (error) {
-    console.error("Registration error:", error);
-    res.status(500).json({
-      success: false,
-      message: "An error occurred during registration",
-      error: process.env.NODE_ENV === "development" ? error.message : undefined
-    });
-  }
-};
-
-/**
- * User login
- */
-exports.login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    // Find user by email
-    const user = await prisma.user.findUnique({
-      where: { email }
-    });
-
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid credentials"
-      });
-    }
-
-    // Verify password
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-
-    if (!isPasswordValid) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid credentials"
-      });
-    }
-
-    // Generate token
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
-      expiresIn: "7d"
-    });
-
-    // Still set cookie for backward compatibility
-    res.cookie("token", token, getTokenCookieOptions());
-
-    res.status(200).json({
-      success: true,
-      message: "Login successful",
-      data: {
-        user: {
-          id: user.id,
-          email: user.email
-        },
-        token: token // Return token in response body
-      }
-    });
-  } catch (error) {
-    console.error("Login error:", error);
-    res.status(500).json({
-      success: false,
-      message: "An error occurred during login",
-      error: process.env.NODE_ENV === "development" ? error.message : undefined
-    });
-  }
-};
-
-/**
- * User logout
- */
-exports.logout = (req, res) => {
-  res.clearCookie("token");
-  res.status(200).json({
-    success: true,
-    message: "Logged out successfully"
+const generateToken = (userId) => {
+  return jwt.sign({ userId }, process.env.JWT_SECRET, {
+    expiresIn: "7d"
   });
+};
+
+/**
+ * User registration service
+ */
+const signup = async ({ email, password, displayName }) => {
+  // Check if user exists
+  const existingUser = await userRepository.findUserByEmail(email);
+
+  if (existingUser) {
+    throw new Error("User with this email already exists");
+  }
+
+  // Hash password
+  const salt = await bcrypt.genSalt(10);
+  const passwordHash = await bcrypt.hash(password, salt);
+
+  // Create user
+  const newUser = await userRepository.createUser({
+    email,
+    password: passwordHash,
+    displayName: displayName || email.split("@")[0] // Use part of email as display name if not provided
+  });
+
+  // Generate token
+  const token = generateToken(newUser.id);
+
+  return {
+    user: {
+      id: newUser.id,
+      email: newUser.email,
+      displayName: newUser.displayName
+    },
+    token
+  };
+};
+
+/**
+ * User login service
+ */
+const login = async ({ email, password }) => {
+  // Find user by email
+  const user = await userRepository.findUserByEmail(email);
+
+  if (!user) {
+    throw new Error("Invalid credentials");
+  }
+
+  // Verify password
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+
+  if (!isPasswordValid) {
+    throw new Error("Invalid credentials");
+  }
+
+  // Generate token
+  const token = generateToken(user.id);
+
+  return {
+    user: {
+      id: user.id,
+      email: user.email,
+      displayName: user.displayName
+    },
+    token
+  };
+};
+
+module.exports = {
+  signup,
+  login,
+  getTokenCookieOptions
 };
