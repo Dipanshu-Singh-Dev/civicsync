@@ -11,13 +11,10 @@ const Login = () => {
     setError(null);
 
     try {
-      // Simulate API call with a timeout
-      await login(formData.username, formData.password);
-      store.handleLogin(formData);
+      const result = await login(formData.email, formData.password);
+      store.handleLogin(result.data.user);
     } catch (err) {
-      setError(
-        err.message || "Invalid username or password. Please try again."
-      );
+      setError(err.message || "Invalid email or password. Please try again.");
     } finally {
       setIsLoading(false);
     }

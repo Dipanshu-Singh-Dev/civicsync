@@ -5,6 +5,7 @@ datasource db {
 
 generator client {
   provider        = "prisma-client-js"
+  output          = "./node_modules/.prisma/client"
 }
 
 
@@ -17,7 +18,17 @@ enum IssueCategory {
   SAFETY
   OTHER
 }
-
+enum Locations {
+  MAYUR_VIHAR
+  KANHAIYA_NAGAR
+  MANSAROVAR_PARK
+  GTB_NAGAR
+  KIRTI_NAGAR
+  SHAHDARA
+  KASHMERE_GATE
+  BURARI
+  OTHER
+}
 
 enum IssueStatus {
   PENDING
@@ -30,8 +41,7 @@ model Issue {
   title       String
   description String?
   category    IssueCategory
-  latitude    Float
-  longitude   Float
+  location    String
   imageUrls   String[]
   status      IssueStatus   @default(PENDING)
   creatorId   String        @db.ObjectId
@@ -49,7 +59,6 @@ model User {
   email         String   @unique
   password      String
   displayName   String?
-  avatarUrl     String?
   createdAt     DateTime @default(now())
   issuesCreated Issue[]        @relation("IssuesCreated")
 }

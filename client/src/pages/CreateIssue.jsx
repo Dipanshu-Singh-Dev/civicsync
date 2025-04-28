@@ -22,41 +22,96 @@ const issueSchema = z
       .max(200, {
         message: "Description must be at most 200 characters"
       }),
-    type: z.enum(["Private", "Public"], { message: "Issue type is required" }),
-    startTime: z.string().nonempty({ message: "Start time is required" }),
-    endTime: z.string().nonempty({ message: "End time is required" }),
-    maxParticipants: z
-      .string()
-      .optional()
-      .refine((val) => !val || !isNaN(Number(val) && Number(val) < 1), {
-        message: "Must be a number higher than 1"
-      })
-      .transform((val) => (val ? Number(val) : undefined)),
-    tag: z.enum(["Hangout", "Work", "Brainstorm", "Wellness"], {
-      message: "Tag is required"
-    })
+    category: z.enum(
+      [
+        "ROAD",
+        "PARK",
+        "PARKING",
+        "LIBRARY",
+        "INFRASTRUCTURE",
+        "SAFETY",
+        "OTHER"
+      ],
+      {
+        message: "Issue category is required"
+      }
+    ),
+    location: z.enum(
+      [
+        "MAYUR_VIHAR",
+        "KANHAIYA_NAGAR",
+        "MANSAROVAR_PARK",
+        "GTB_NAGAR",
+        "KIRTI_NAGAR",
+        "SHAHDARA",
+        "KASHMERE_GATE",
+        "BURARI",
+        "OTHER"
+      ],
+      { message: "Location is required." }
+    )
   })
-  .refine((data) => new Date(data.endTime) > new Date(data.startTime), {
-    message: "End time must be after start time",
-    path: ["endTime"]
-  });
+  .passthrough();
 
 const CreateIssue = () => {
+  const [loading, setLoading] = React.useState(false);
   const form = useForm({
     resolver: zodResolver(issueSchema),
     defaultValues: {
       title: "",
       description: "",
-      type: "Public",
-      startTime: "",
-      endTime: "",
-      maxParticipants: "",
-      tag: "Hangout"
+      location: "MAYUR_VIHAR",
+      category: "ROAD",
+      picture1: [],
+      picture2: [],
+      picture3: []
     }
   });
 
   const onSubmit = async (data) => {
     try {
+      setLoading(true);
+
+      const fileToDataUrl = (file) =>
+        new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = (error) => reject(error);
+          reader.readAsDataURL(file);
+        });
+
+      // Create a mutable copy of the data to hold data URLs
+      const processedData = { ...data };
+      const pictureKeys = ["picture1", "picture2", "picture3"];
+      const conversionPromises = [];
+
+      for (const key of pictureKeys) {
+        const fileList = data[key];
+        // Check if the FileList exists and has at least one file
+        if (fileList && fileList.length > 0) {
+          const file = fileList[0];
+          conversionPromises.push(
+            fileToDataUrl(file)
+              .then((dataUrl) => {
+                processedData[key] = dataUrl; // Update the copy with the data URL
+              })
+              .catch((error) => {
+                console.error(`Error converting ${key} to data URL:`, error);
+                processedData[key] = null; // Handle potential conversion error
+              })
+          );
+        } else {
+          // If no file was selected for this input, set it to null
+          processedData[key] = null;
+        }
+      }
+
+      // Wait for all file conversions to complete
+      await Promise.all(conversionPromises);
+
+      console.log("Data with pictures converted to data URLs:", processedData);
+      // Note: The subsequent call to createIssue should use processedData
+      // e.g., const issue = await createIssue(processedData);
       const issue = await createIssue(data);
       console.log("Issue created:", issue);
       toast.success({
@@ -67,12 +122,14 @@ const CreateIssue = () => {
       toast.error({
         title: "Error creating issue"
       });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="max-w-xl p-12">
-      <CreateIssueForm form={form} onSubmit={onSubmit} />
+      <CreateIssueForm form={form} onSubmit={onSubmit} loading={loading} />
     </div>
   );
 };

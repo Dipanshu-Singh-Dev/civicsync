@@ -16,20 +16,20 @@ import {
   SelectValue,
   SelectItem
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-
-const CreateIssueForm = ({ form, onSubmit }) => {
+import { FileInput } from "@/components/FileInput";
+import LoadingButton from "./LoadingButton";
+const CreateIssueForm = ({ form, onSubmit, loading }) => {
   return (
-    <Form {...form}>
+    <Form {...form} className="w-full">
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Issue Title</FormLabel>
+              <FormLabel>Title</FormLabel>
               <FormControl>
-                <Input placeholder="Friday Night Doodles" {...field} />
+                <Input placeholder="Pothole on the road" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -44,7 +44,7 @@ const CreateIssueForm = ({ form, onSubmit }) => {
               <FormLabel>Description</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="A brief summary of the session"
+                  placeholder="A brief description of the issue"
                   {...field}
                 />
               </FormControl>
@@ -56,18 +56,25 @@ const CreateIssueForm = ({ form, onSubmit }) => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <FormField
             control={form.control}
-            name="type"
+            name="category"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Issue Type</FormLabel>
+                <FormLabel>Category</FormLabel>
                 <FormControl>
                   <Select {...field} onValueChange={field.onChange}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select type" />
+                      <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Public">Public</SelectItem>
-                      <SelectItem value="Private">Private</SelectItem>
+                      <SelectItem value="ROAD">Road</SelectItem>
+                      <SelectItem value="PARK">Park</SelectItem>
+                      <SelectItem value="PARKING">Parking</SelectItem>
+                      <SelectItem value="LIBRARY">Library</SelectItem>
+                      <SelectItem value="INFRASTRUCTURE">
+                        Infrastructure
+                      </SelectItem>
+                      <SelectItem value="SAFETY">Safety</SelectItem>
+                      <SelectItem value="OTHER">Other</SelectItem>
                     </SelectContent>
                   </Select>
                 </FormControl>
@@ -78,20 +85,31 @@ const CreateIssueForm = ({ form, onSubmit }) => {
 
           <FormField
             control={form.control}
-            name="tag"
+            name="location"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Tag</FormLabel>
+                <FormLabel>Location</FormLabel>
                 <FormControl>
                   <Select {...field} onValueChange={field.onChange}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Choose a tag" />
+                      <SelectValue placeholder="Choose a location" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Hangout">Hangout</SelectItem>
-                      <SelectItem value="Work">Work</SelectItem>
-                      <SelectItem value="Brainstorm">Brainstorm</SelectItem>
-                      <SelectItem value="Wellness">Wellness</SelectItem>
+                      <SelectItem value="MAYUR_VIHAR">Mayur Vihar</SelectItem>
+                      <SelectItem value="KANHAIYA_NAGAR">
+                        Kanhaiya Nagar
+                      </SelectItem>
+                      <SelectItem value="MANSAROVAR_PARK">
+                        Mansarovar Park
+                      </SelectItem>
+                      <SelectItem value="GTB_NAGAR">Gtb Nagar</SelectItem>
+                      <SelectItem value="KIRTI_NAGAR">Kirti Nagar</SelectItem>
+                      <SelectItem value="SHAHDARA">Shahdara</SelectItem>
+                      <SelectItem value="KASHMERE_GATE">
+                        Kashmere Gate
+                      </SelectItem>
+                      <SelectItem value="BURARI">Burari</SelectItem>
+                      <SelectItem value="OTHER">Other</SelectItem>
                     </SelectContent>
                   </Select>
                 </FormControl>
@@ -100,54 +118,14 @@ const CreateIssueForm = ({ form, onSubmit }) => {
             )}
           />
         </div>
-
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <FormField
-            control={form.control}
-            name="startTime"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Start Time</FormLabel>
-                <FormControl>
-                  <Input type="datetime-local" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="endTime"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>End Time</FormLabel>
-                <FormControl>
-                  <Input type="datetime-local" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <FileInput number={1} />
+          <FileInput number={2} />
         </div>
-
-        <FormField
-          control={form.control}
-          name="maxParticipants"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Max Participants (optional)</FormLabel>
-              <FormControl>
-                <Input type="number" placeholder="10" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <Button type="submit" className="w-full">
-          Create Issue
-        </Button>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <FileInput number={3} />
+        </div>
+        <LoadingButton isLoading={loading} submitButtonText={"Create Issue"} />
       </form>
     </Form>
   );

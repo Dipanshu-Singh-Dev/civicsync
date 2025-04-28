@@ -23,14 +23,15 @@ import {
 } from "@/components/ui/form";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
+import LoadingButton from "./LoadingButton";
 
 // Create a schema for our form
 const createFormSchema = () => {
   return z.object({
-    username: z
+    email: z
       .string()
-      .min(3, { message: "Username must be at least 3 characters" })
-      .max(50, { message: "Username must be less than 50 characters" }),
+      .min(3, { message: "Email must be at least 3 characters" })
+      .max(50, { message: "Email must be less than 50 characters" }),
     password: z
       .string()
       .min(6, { message: "Password must be at least 6 characters" })
@@ -55,7 +56,7 @@ const AuthForm = ({
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: "",
+      email: "",
       password: ""
     }
   });
@@ -85,13 +86,13 @@ const AuthForm = ({
             >
               <FormField
                 control={form.control}
-                name="username"
+                name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Username</FormLabel>
+                    <FormLabel>Email</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Enter your username"
+                        placeholder="Enter your email"
                         disabled={isLoading}
                         {...field}
                       />
@@ -120,16 +121,10 @@ const AuthForm = ({
                 )}
               />
 
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Loading...
-                  </>
-                ) : (
-                  submitButtonText
-                )}
-              </Button>
+              <LoadingButton
+                isLoading={isLoading}
+                submitButtonText={submitButtonText}
+              />
             </form>
           </Form>
         </CardContent>

@@ -1,16 +1,16 @@
 import axiosInstance from "@/services/api";
 
-export const signup = async (username, password) => {
+export const signup = async (email, password) => {
   const response = await axiosInstance.post("/auth/signup", {
-    username,
+    email,
     password
   });
   return response.data;
 };
 
-export const login = async (username, password) => {
+export const login = async (email, password) => {
   const response = await axiosInstance.post("/auth/login", {
-    username,
+    email,
     password
   });
   return response.data;

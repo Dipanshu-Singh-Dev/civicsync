@@ -9,7 +9,7 @@ const AppRouter = () => {
     <Router>
       <Navbar />
 
-      <div id="body-container" className="pt-20">
+      <div id="body-container">
         <Routes>
           <Route path="/" element={user ? <Home /> : <Login />} />
           <Route path="/signup" element={<Signup />} />

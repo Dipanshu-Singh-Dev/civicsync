@@ -9,7 +9,6 @@ const prisma = new PrismaClient();
 exports.protect = async (req, res, next) => {
   try {
     let token;
-
     // Get token from cookie
     if (req.cookies?.token) {
       token = req.cookies.token;
@@ -30,13 +29,14 @@ exports.protect = async (req, res, next) => {
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
+    console.log("Decoded token :", decoded);
     // Get user from token
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
       select: {
         id: true,
-        username: true,
         email: true,
+        displayName: true,
         createdAt: true
       }
     });
@@ -87,11 +87,12 @@ exports.socketAuth = (socket, next) => {
     prisma.user
       .findUnique({
         where: { id: decoded.userId },
-        select: { username: true }
+        select: { displayName: true, email: true }
       })
       .then((user) => {
         if (user) {
-          socket.user.username = user.username;
+          socket.user.displayName = user.displayName;
+          socket.user.email = user.email;
         }
         next();
       })

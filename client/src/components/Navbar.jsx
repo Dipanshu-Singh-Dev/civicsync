@@ -1,17 +1,6 @@
-// No unused hooks or Link/navigate needed
-// import React if needed for JSX (with new JSX transform this may be optional)
 import { Button } from "@/components/ui/button";
 import { logout } from "@/services/auth.service"; // Assuming you have a logout function
-import {
-  Menu,
-  Mountain,
-  UserRoundPlus,
-  UserRound,
-  CirclePlus,
-  Plus,
-  House,
-  LogIn
-} from "lucide-react"; // Import icons from lucide-react
+import { Mountain, UserRoundPlus, Plus, LogIn } from "lucide-react"; // Import icons from lucide-react
 import { NavLink } from "react-router-dom";
 import {
   Tooltip,
@@ -76,7 +65,7 @@ export default function Navbar() {
           <>
             {/* Welcome message - hidden on small screens for consistency */}
             <span className="hidden sm:inline text-sm font-medium text-foreground">
-              Welcome, {user.username}!
+              Welcome, {user.email}!
             </span>
             {/* Logout Button - Remains unchanged as it's not a NavLink */}
             <Button onClick={handleLogout} size="sm">

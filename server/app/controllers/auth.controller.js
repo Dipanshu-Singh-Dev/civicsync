@@ -20,19 +20,17 @@ const getTokenCookieOptions = () => {
  */
 exports.signup = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
 
     // Check if user exists
-    const existingUser = await prisma.user.findFirst({
-      where: {
-        OR: [{ username }]
-      }
+    const existingUser = await prisma.user.findUnique({
+      where: { email }
     });
 
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message: "User with this username already exists"
+        message: "User with this email already exists"
       });
     }
 
@@ -43,8 +41,8 @@ exports.signup = async (req, res) => {
     // Create user
     const newUser = await prisma.user.create({
       data: {
-        username,
-        passwordHash
+        email,
+        password: passwordHash
       }
     });
 
@@ -62,7 +60,7 @@ exports.signup = async (req, res) => {
       data: {
         user: {
           id: newUser.id,
-          username: newUser.username
+          email: newUser.email
         }
       }
     });
@@ -81,11 +79,11 @@ exports.signup = async (req, res) => {
  */
 exports.login = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
 
-    // Find user by username
+    // Find user by email
     const user = await prisma.user.findUnique({
-      where: { username }
+      where: { email }
     });
 
     if (!user) {
@@ -96,7 +94,7 @@ exports.login = async (req, res) => {
     }
 
     // Verify password
-    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
       return res.status(401).json({
@@ -119,7 +117,7 @@ exports.login = async (req, res) => {
       data: {
         user: {
           id: user.id,
-          username: user.username
+          email: user.email
         }
       }
     });
