@@ -1,7 +1,15 @@
 import React, { useState } from "react";
 // Remove unused import since we're using our own implementation
 // import Table from "react-table-lite";
-import { ThumbsUp, ThumbsDown, Trash2 } from "lucide-react"; // Import icons
+import { ThumbsUp, ThumbsDown, Trash2, Image as ImageIcon } from "lucide-react"; // Import icons
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from "@/components/ui/dialog";
 
 // Location options - assuming these match your schema
 const LOCATIONS = [
@@ -45,6 +53,7 @@ function IssuesTable({
 }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [locationFilter, setLocationFilter] = useState("ALL");
+  const [selectedImages, setSelectedImages] = useState([]);
   const itemsPerPage = 5;
   const currentUser = JSON.parse(localStorage.getItem("user"));
   // Apply location filter
@@ -65,7 +74,6 @@ function IssuesTable({
       setCurrentPage(page);
     }
   };
-
   // Handle location filter change
   const handleLocationChange = (e) => {
     setLocationFilter(e.target.value);
@@ -125,6 +133,9 @@ function IssuesTable({
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Status
               </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Images
+              </th>
               <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
                 Actions
               </th>
@@ -158,6 +169,44 @@ function IssuesTable({
                   >
                     {issue.status}
                   </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {issue.imageUrls?.length > 0 ? (
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="flex items-center text-blue-600 hover:text-blue-900"
+                          onClick={() => setSelectedImages(issue.imageUrls)}
+                        >
+                          <ImageIcon size={18} className="mr-1" />
+                          <span>View ({issue.imageUrls.length})</span>
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                          <DialogTitle>Issue Images</DialogTitle>
+                        </DialogHeader>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          {selectedImages.map((url, index) => (
+                            <div
+                              key={index}
+                              className="rounded-lg overflow-hidden"
+                            >
+                              <img
+                                src={url}
+                                alt={`Issue Image ${index + 1}`}
+                                className="w-full h-auto object-cover"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  ) : (
+                    "No images"
+                  )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-center">
                   <div className="flex justify-center space-x-2">

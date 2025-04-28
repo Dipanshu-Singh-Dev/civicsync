@@ -29,7 +29,7 @@ const Home = () => {
   const onUpvote = async (issueId) => {
     try {
       await upvoteIssue(issueId);
-      toast.success("Vote recorded successfully");
+      toast.success("Upvote recorded successfully");
       fetchIssues(); // Refresh issues list
     } catch (error) {
       console.error("Error upvoting:", error);
@@ -39,7 +39,7 @@ const Home = () => {
   const onDownvote = async (issueId) => {
     try {
       await downvoteIssue(issueId);
-      toast.success("Vote recorded successfully");
+      toast.success("Downvote recorded successfully");
       fetchIssues(); // Refresh issues list
     } catch (error) {
       console.error("Error downvoting:", error);

@@ -1,6 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { CreateIssue, Home, Login, Issue, Signup } from "@/pages";
+import { CreateIssue, Home, Login, Issue, Signup, Visualise } from "@/pages";
 import Navbar from "@/components/Navbar";
 import { Toaster } from "sonner";
 import { useStore } from "@/store";
@@ -19,6 +19,7 @@ const AppRouter = () => {
             path="/create-issue"
             element={user ? <CreateIssue /> : <Login />}
           />
+          <Route path="/visualise" element={user ? <Visualise /> : <Login />} />
         </Routes>
       </div>
     </Router>
