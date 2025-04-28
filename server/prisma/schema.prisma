@@ -4,10 +4,9 @@ datasource db {
 }
 
 generator client {
-  provider        = "prisma-client-js"
-  output          = "./node_modules/.prisma/client"
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
 }
-
 
 enum IssueCategory {
   ROAD
@@ -18,6 +17,7 @@ enum IssueCategory {
   SAFETY
   OTHER
 }
+
 enum Locations {
   MAYUR_VIHAR
   KANHAIYA_NAGAR
@@ -36,6 +36,24 @@ enum IssueStatus {
   RESOLVED
 }
 
+// Use JSON type instead of embedded document type for MongoDB compatibility
+// This allows array operations like filter and some to work correctly
+model Upvote {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  voterId   String   @db.ObjectId
+  issueId   String   @db.ObjectId
+  issue     Issue    @relation(fields: [issueId], references: [id], name: "IssueUpvotes")
+  createdAt DateTime @default(now())
+}
+
+model Downvote {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  voterId   String   @db.ObjectId
+  issueId   String   @db.ObjectId
+  issue     Issue    @relation(fields: [issueId], references: [id], name: "IssueDownvotes")
+  createdAt DateTime @default(now())
+}
+
 model Issue {
   id          String        @id @default(auto()) @map("_id") @db.ObjectId
   title       String
@@ -45,14 +63,12 @@ model Issue {
   imageUrls   String[]
   status      IssueStatus   @default(PENDING)
   creatorId   String        @db.ObjectId
-  creator     User          @relation("IssuesCreated", fields: [creatorId], references: [id])
-  upvotes     String[]      @db.ObjectId
-  downvotes   String[]      @db.ObjectId
+  creator     User          @relation(fields: [creatorId], references: [id], name: "UserIssues")
+  upvotes     Upvote[]      @relation("IssueUpvotes")
+  downvotes   Downvote[]    @relation("IssueDownvotes")
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 }
-
-
 
 model User {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
@@ -60,5 +76,5 @@ model User {
   password      String
   displayName   String?
   createdAt     DateTime @default(now())
-  issuesCreated Issue[]        @relation("IssuesCreated")
+  issuesCreated Issue[]  @relation("UserIssues")
 }
