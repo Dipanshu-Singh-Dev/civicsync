@@ -31,42 +31,67 @@ async function createIssue({
  * Fetch public issues and private issues for the user
  */
 async function getIssues(userId) {
-  // Get all issues, sorted by most recent first
-  const issues = await prisma.issue.findMany({
-    include: {
-      creator: {
-        select: {
-          email: true,
-          displayName: true
+  try {
+    // Get all issues without including creator (to avoid the null error)
+    const issues = await prisma.issue.findMany({
+      include: {
+        upvotes: {
+          where: {
+            voterId: userId
+          },
+          select: {
+            id: true
+          }
+        },
+        downvotes: {
+          where: {
+            voterId: userId
+          },
+          select: {
+            id: true
+          }
         }
       },
-      upvotes: {
-        where: {
-          voterId: userId
-        },
-        select: {
-          id: true
-        }
-      },
-      downvotes: {
-        where: {
-          voterId: userId
-        },
-        select: {
-          id: true
-        }
-      }
-    },
-    orderBy: { createdAt: "desc" }
-  });
+      orderBy: { createdAt: "desc" }
+    });
 
-  return issues.map((issue) => ({
-    ...issue,
-    upvoted: issue.upvotes.length > 0,
-    downvoted: issue.downvotes.length > 0,
-    upvotes: undefined, // Remove the upvotes array
-    downvotes: undefined // Remove the downvotes array
-  }));
+    // Get all unique creator IDs from the issues
+    const creatorIds = [...new Set(issues.map((issue) => issue.creatorId))];
+
+    // Fetch all creators in a single query
+    const creators = await prisma.user.findMany({
+      where: {
+        id: { in: creatorIds }
+      },
+      select: {
+        id: true,
+        email: true,
+        displayName: true
+      }
+    });
+
+    // Create a lookup map for creators
+    const creatorMap = {};
+    creators.forEach((creator) => {
+      creatorMap[creator.id] = creator;
+    });
+
+    // Map issues with creators when available
+    return issues.map((issue) => ({
+      ...issue,
+      creator: creatorMap[issue.creatorId] || {
+        email: "deleted-user@example.com",
+        displayName: "Deleted User"
+      },
+      upvoted: issue.upvotes.length > 0,
+      downvoted: issue.downvotes.length > 0,
+      upvotes: undefined,
+      downvotes: undefined
+    }));
+  } catch (error) {
+    console.error("Error fetching issues:", error);
+    return [];
+  }
 }
 
 /**

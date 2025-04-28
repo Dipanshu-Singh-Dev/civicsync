@@ -33,15 +33,21 @@ model User {
 
 ### Frontend
 
-![React](https://img.shields.io/badge/React-18.2-%2361DAFB)
-![Vite](https://img.shields.io/badge/Vite-4.4-%23646CFF)
-![Shadcn/ui](https://img.shields.io/badge/Shadcn/ui-0.5-%23000000)
+![React](https://img.shields.io/badge/React-19.0-%2361DAFB)
+![Vite](https://img.shields.io/badge/Vite-6.3-%23646CFF)
+![Radix UI](https://img.shields.io/badge/Radix%20UI-Latest-%23000000)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-4.1-%2338B2AC)
+![Chart.js](https://img.shields.io/badge/Chart.js-4.4-%23FF6384)
+![React Router](https://img.shields.io/badge/React%20Router-7.5-%23CA4245)
+![Zustand](https://img.shields.io/badge/Zustand-5.0-%23000000)
 
 ### Backend
 
 ![Node.js](https://img.shields.io/badge/Node.js-20+-%23339933)
-![Express](https://img.shields.io/badge/Express-4.18-%23000000)
-![Prisma](https://img.shields.io/badge/Prisma-5.7-%232D3748)
+![Express](https://img.shields.io/badge/Express-5.1-%23000000)
+![Prisma](https://img.shields.io/badge/Prisma-6.6-%232D3748)
+![JWT](https://img.shields.io/badge/JWT-9.0-%23000000)
+![bcrypt](https://img.shields.io/badge/bcrypt-5.1-%23003A70)
 
 ### Database
 
