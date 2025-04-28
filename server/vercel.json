@@ -1,0 +1,27 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "app/server.js",
+      "use": "@vercel/node",
+      "config": {
+        "maxLambdaSize": "10mb",
+        "includeFiles": [
+          "prisma/**",
+          "prisma/schema.prisma",
+          "prisma/migrations/**"
+        ],
+        "scripts": {
+          "vercel-build": "prisma generate"
+        }
+      }
+    }
+  ],
+
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "app/server.js"
+    }
+  ]
+}
