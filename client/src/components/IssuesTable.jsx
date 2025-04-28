@@ -1,7 +1,13 @@
 import React, { useState } from "react";
 // Remove unused import since we're using our own implementation
 // import Table from "react-table-lite";
-import { ThumbsUp, ThumbsDown, Trash2, Image as ImageIcon } from "lucide-react"; // Import icons
+import {
+  ThumbsUp,
+  ThumbsDown,
+  Trash2,
+  Image as ImageIcon,
+  Loader2
+} from "lucide-react"; // Import icons
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -49,13 +55,15 @@ function IssuesTable({
   issues,
   onUpvote = () => {},
   onDownvote = () => {},
-  onDelete = () => {}
+  onDelete = () => {},
+  isLoading = false
 }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [locationFilter, setLocationFilter] = useState("ALL");
   const [selectedImages, setSelectedImages] = useState([]);
   const itemsPerPage = 5;
   const currentUser = JSON.parse(localStorage.getItem("user"));
+
   // Apply location filter
   const filteredIssues =
     locationFilter === "ALL"
@@ -79,11 +87,6 @@ function IssuesTable({
     setLocationFilter(e.target.value);
     setCurrentPage(1); // Reset to first page when filter changes
   };
-
-  // Handle cases where issues might not be loaded yet or are empty
-  if (!issues || issues.length === 0) {
-    return <div>No issues found.</div>;
-  }
 
   return (
     <div className="container mx-auto p-4">
@@ -142,113 +145,117 @@ function IssuesTable({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {currentIssues.map((issue) => (
-              <tr key={issue.id}>
-                <td className="px-6 py-4 whitespace-nowrap">{issue.title}</td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {issue.category}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {formatLocation(issue.location)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {issue.creator?.email || "N/A"}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {new Date(issue.createdAt).toLocaleDateString()}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      issue.status === "PENDING"
-                        ? "bg-yellow-100 text-yellow-800"
-                        : issue.status === "IN_PROGRESS"
-                        ? "bg-blue-100 text-blue-800"
-                        : "bg-green-100 text-green-800"
-                    }`}
-                  >
-                    {issue.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {issue.imageUrls?.length > 0 ? (
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="flex items-center text-blue-600 hover:text-blue-900"
-                          onClick={() => setSelectedImages(issue.imageUrls)}
-                        >
-                          <ImageIcon size={18} className="mr-1" />
-                          <span>View ({issue.imageUrls.length})</span>
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
-                        <DialogHeader>
-                          <DialogTitle>Issue Images</DialogTitle>
-                        </DialogHeader>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          {selectedImages.map((url, index) => (
-                            <div
-                              key={index}
-                              className="rounded-lg overflow-hidden"
-                            >
-                              <img
-                                src={url}
-                                alt={`Issue Image ${index + 1}`}
-                                className="w-full h-auto object-cover"
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                  ) : (
-                    "No images"
-                  )}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-center">
-                  <div className="flex justify-center space-x-2">
-                    <button
-                      onClick={() => onUpvote(issue.id)}
-                      className={`${
-                        issue.upvoted
-                          ? "text-blue-800 bg-blue-100 rounded-full p-2"
-                          : "text-blue-600 hover:text-blue-900 p-2"
+            {currentIssues.length < 1 ? (
+              <h1>No Items found</h1>
+            ) : (
+              currentIssues.map((issue) => (
+                <tr key={issue.id}>
+                  <td className="px-6 py-4 whitespace-nowrap">{issue.title}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {issue.category}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {formatLocation(issue.location)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {issue.creator?.email || "N/A"}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {new Date(issue.createdAt).toLocaleDateString()}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        issue.status === "PENDING"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : issue.status === "IN_PROGRESS"
+                          ? "bg-blue-100 text-blue-800"
+                          : "bg-green-100 text-green-800"
                       }`}
-                      title="Upvote"
                     >
-                      <ThumbsUp size={18} />
-                    </button>
-                    <button
-                      onClick={() => onDownvote(issue.id)}
-                      className={`${
-                        issue.downvoted
-                          ? "text-red-800 bg-red-100 rounded-full p-2"
-                          : "text-red-600 hover:text-red-900 p-2"
-                      }`}
-                      title="Downvote"
-                    >
-                      <ThumbsDown size={18} />
-                    </button>
+                      {issue.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {issue.imageUrls?.length > 0 ? (
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="flex items-center text-blue-600 hover:text-blue-900"
+                            onClick={() => setSelectedImages(issue.imageUrls)}
+                          >
+                            <ImageIcon size={18} className="mr-1" />
+                            <span>View ({issue.imageUrls.length})</span>
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
+                          <DialogHeader>
+                            <DialogTitle>Issue Images</DialogTitle>
+                          </DialogHeader>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {selectedImages.map((url, index) => (
+                              <div
+                                key={index}
+                                className="rounded-lg overflow-hidden"
+                              >
+                                <img
+                                  src={url}
+                                  alt={`Issue Image ${index + 1}`}
+                                  className="w-full h-auto object-cover"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    ) : (
+                      "No images"
+                    )}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                    <div className="flex justify-center space-x-2">
+                      <button
+                        onClick={() => onUpvote(issue.id)}
+                        className={`${
+                          issue.upvoted
+                            ? "text-blue-800 bg-blue-100 rounded-full p-2"
+                            : "text-blue-600 hover:text-blue-900 p-2"
+                        }`}
+                        title="Upvote"
+                      >
+                        <ThumbsUp size={18} />
+                      </button>
+                      <button
+                        onClick={() => onDownvote(issue.id)}
+                        className={`${
+                          issue.downvoted
+                            ? "text-red-800 bg-red-100 rounded-full p-2"
+                            : "text-red-600 hover:text-red-900 p-2"
+                        }`}
+                        title="Downvote"
+                      >
+                        <ThumbsDown size={18} />
+                      </button>
 
-                    {/* Only show delete button if user is creator and status is PENDING */}
-                    {currentUser &&
-                      issue.creatorId === currentUser.id &&
-                      issue.status === "PENDING" && (
-                        <button
-                          onClick={() => onDelete(issue.id)}
-                          className="text-gray-600 hover:text-gray-900"
-                          title="Delete"
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      )}
-                  </div>
-                </td>
-              </tr>
-            ))}
+                      {/* Only show delete button if user is creator and status is PENDING */}
+                      {currentUser &&
+                        issue.creatorId === currentUser.id &&
+                        issue.status === "PENDING" && (
+                          <button
+                            onClick={() => onDelete(issue.id)}
+                            className="text-gray-600 hover:text-gray-900"
+                            title="Delete"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        )}
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

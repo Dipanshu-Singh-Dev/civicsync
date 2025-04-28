@@ -34,9 +34,9 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 bg-white flex h-20 w-full shrink-0 items-center border-b px-4 md:px-6 z-50">
-      <NavItem to="/">
-        <Mountain className="h-6 w-6 mr-2" />
-        <span className="font-semibold">CodeCollab</span>
+      <NavItem to="/" className="flex items-center gap-2">
+        <img src="logo.png" alt="Civicsync" width={32} height={32} />
+        <span className="font-semibold text-xl">Civicsync</span>
       </NavItem>
       <div className="ml-auto flex items-center gap-2 sm:gap-4">
         {user ? (
@@ -59,6 +59,8 @@ export default function Navbar() {
                   <span className="hidden sm:inline">Visualise</span>
                 </NavItem>
               </TooltipTrigger>
+
+              <TooltipContent>Visualise the data</TooltipContent>
             </Tooltip>
             <span className="hidden sm:inline text-sm font-medium text-foreground">
               Welcome, {user.email}!

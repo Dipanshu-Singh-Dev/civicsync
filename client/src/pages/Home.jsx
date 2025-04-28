@@ -11,14 +11,17 @@ import IssuesTable from "@/components/IssuesTable";
 
 const Home = () => {
   const [issues, setIssues] = useState([]);
-
+  const [isLoading, setIsLoading] = useState(false);
   const fetchIssues = async () => {
     try {
+      setIsLoading(true);
       const response = await getIssues();
       setIssues(response.data);
     } catch (error) {
       console.error("Error fetching issues:", error);
       toast.error("Failed to load issues");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -63,6 +66,7 @@ const Home = () => {
         onUpvote={onUpvote}
         onDownvote={onDownvote}
         onDelete={onDelete}
+        isLoading={isLoading}
       />
     </div>
   );

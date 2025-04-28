@@ -8,8 +8,8 @@ const prisma = new PrismaClient();
 const getTokenCookieOptions = () => {
   return {
     httpOnly: true, // Prevents client-side JS from reading the cookie
-    secure: process.env.NODE_ENV === "production", // Use HTTPS in production
-    sameSite: "strict", // CSRF protection
+    secure: true, // Use HTTPS in production
+    sameSite: "none", // CSRF protection
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
     path: "/" // Cookie is valid for all routes
   };

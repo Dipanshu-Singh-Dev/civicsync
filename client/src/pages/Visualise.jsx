@@ -11,6 +11,7 @@ import {
   Title
 } from "chart.js";
 import { getIssues } from "@/services/issue.service";
+import { getVotesByDate } from "@/services/vote.service";
 import { useStore } from "@/store";
 
 // Register ChartJS components
@@ -36,8 +37,9 @@ function Visualise() {
       if (!user) return;
 
       try {
-        const response = await getIssues(user.id);
-        const issues = response.data;
+        // Fetch issues for category and status charts
+        const issueResponse = await getIssues(user.id);
+        const issues = issueResponse.data;
 
         // Process category data
         const categoryCounts = issues.reduce((acc, issue) => {
@@ -81,57 +83,11 @@ function Visualise() {
           ]
         });
 
-        // Process votes data (last 7 days)
-        const today = new Date();
-        const last7Days = Array(7)
-          .fill()
-          .map((_, i) => {
-            const date = new Date(today);
-            date.setDate(date.getDate() - i);
-            return date.toISOString().split("T")[0];
-          })
-          .reverse();
-
-        const upvotesByDay = last7Days.map(
-          (date) =>
-            issues.filter(
-              (issue) =>
-                new Date(issue.createdAt).toISOString().split("T")[0] ===
-                  date && issue.upvoted
-            ).length
-        );
-
-        const downvotesByDay = last7Days.map(
-          (date) =>
-            issues.filter(
-              (issue) =>
-                new Date(issue.createdAt).toISOString().split("T")[0] ===
-                  date && issue.downvoted
-            ).length
-        );
-
-        setVotesData({
-          labels: last7Days.map((date) =>
-            new Date(date).toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric"
-            })
-          ),
-          datasets: [
-            {
-              label: "Upvotes",
-              data: upvotesByDay,
-              backgroundColor: "#36A2EB"
-            },
-            {
-              label: "Downvotes",
-              data: downvotesByDay,
-              backgroundColor: "#FF6384"
-            }
-          ]
-        });
+        // Fetch vote data from the vote service
+        const voteResponse = await getVotesByDate();
+        setVotesData(voteResponse.data);
       } catch (error) {
-        console.error("Error fetching issues:", error);
+        console.error("Error fetching data:", error);
       }
     };
 
