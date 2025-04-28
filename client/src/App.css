@@ -6,11 +6,14 @@ html {
 body {
   margin: 0;
   padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 #body-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 100% !important;
+  width: 96vw !important;
   min-height: (100vh - 5rem) !important;
 }

@@ -45,7 +45,7 @@ export default function Navbar() {
               <TooltipTrigger asChild>
                 <NavItem to="/create-issue">
                   <Plus className="h-5 w-5 shrink-0 sm:mr-2" />
-                  <span className="hidden sm:inline">Create Issue</span>
+                  <span className="hidden lg:inline">Create Issue</span>
                 </NavItem>
               </TooltipTrigger>
               <TooltipContent>
@@ -56,13 +56,13 @@ export default function Navbar() {
               <TooltipTrigger asChild>
                 <NavItem to="/visualise">
                   <BarChart className="h-5 w-5 shrink-0 sm:mr-2" />
-                  <span className="hidden sm:inline">Visualise</span>
+                  <span className="hidden lg:inline">Visualise</span>
                 </NavItem>
               </TooltipTrigger>
 
               <TooltipContent>Visualise the data</TooltipContent>
             </Tooltip>
-            <span className="hidden sm:inline text-sm font-medium text-foreground">
+            <span className="hidden lg:inline text-sm font-medium text-foreground">
               Welcome, {user.email}!
             </span>
             <Button onClick={handleLogout} size="sm">
@@ -75,7 +75,7 @@ export default function Navbar() {
               <TooltipTrigger asChild>
                 <NavItem to="/">
                   <LogIn className="h-5 w-5 shrink-0 sm:mr-2" />
-                  <span className="hidden sm:inline">Login</span>
+                  <span className="hidden lg:inline">Login</span>
                 </NavItem>
               </TooltipTrigger>
               <TooltipContent>
@@ -86,7 +86,7 @@ export default function Navbar() {
               <TooltipTrigger asChild>
                 <NavItem to="/signup">
                   <UserRoundPlus className="h-5 w-5 shrink-0 sm:mr-2" />
-                  <span className="hidden sm:inline">Sign Up</span>
+                  <span className="hidden lg:inline">Sign Up</span>
                 </NavItem>
               </TooltipTrigger>
               <TooltipContent>

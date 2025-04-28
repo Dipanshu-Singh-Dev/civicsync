@@ -4,12 +4,12 @@ const jwt = require("jsonwebtoken");
 
 const prisma = new PrismaClient();
 
-// Cookie configuration for JWT
+// Cookie configuration for JWT - keep for backward compatibility
 const getTokenCookieOptions = () => {
   return {
     httpOnly: true, // Prevents client-side JS from reading the cookie
     secure: true, // Use HTTPS in production
-    sameSite: "none", // CSRF protection
+    sameSite: "none", // Allow cross-site cookie usage
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
     path: "/" // Cookie is valid for all routes
   };
@@ -51,7 +51,7 @@ exports.signup = async (req, res) => {
       expiresIn: "7d"
     });
 
-    // Set JWT in HTTP-only cookie
+    // Still set cookie for backward compatibility
     res.cookie("token", token, getTokenCookieOptions());
 
     res.status(201).json({
@@ -61,7 +61,8 @@ exports.signup = async (req, res) => {
         user: {
           id: newUser.id,
           email: newUser.email
-        }
+        },
+        token: token // Return token in response body
       }
     });
   } catch (error) {
@@ -108,7 +109,7 @@ exports.login = async (req, res) => {
       expiresIn: "7d"
     });
 
-    // Set JWT in HTTP-only cookie
+    // Still set cookie for backward compatibility
     res.cookie("token", token, getTokenCookieOptions());
 
     res.status(200).json({
@@ -118,7 +119,8 @@ exports.login = async (req, res) => {
         user: {
           id: user.id,
           email: user.email
-        }
+        },
+        token: token // Return token in response body
       }
     });
   } catch (error) {

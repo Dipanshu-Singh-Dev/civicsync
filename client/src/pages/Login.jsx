@@ -12,7 +12,12 @@ const Login = () => {
 
     try {
       const result = await login(formData.email, formData.password);
-      store.handleLogin(result.data.user);
+      // Save user with token
+      const userData = {
+        ...result.data.user,
+        token: result.data.token
+      };
+      store.handleLogin(userData);
       toast.success("Login successful");
     } catch (err) {
       toast.error(

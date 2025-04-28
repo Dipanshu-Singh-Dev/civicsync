@@ -9,13 +9,14 @@ const prisma = new PrismaClient();
 exports.protect = async (req, res, next) => {
   try {
     let token;
-    // Get token from cookie
-    if (req.cookies?.token) {
-      token = req.cookies.token;
-    }
-    // Fallback to Authorization header if cookie is not present
-    else if (req.headers?.authorization?.startsWith("Bearer")) {
+
+    // First check Authorization header (Bearer token)
+    if (req.headers?.authorization?.startsWith("Bearer")) {
       token = req.headers.authorization.split(" ")[1];
+    }
+    // Fallback to cookie if header is not present
+    else if (req.cookies?.token) {
+      token = req.cookies.token;
     }
 
     // Check if token exists

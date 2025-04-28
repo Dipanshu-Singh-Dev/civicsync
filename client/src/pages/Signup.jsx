@@ -2,23 +2,27 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthForm from "@/components/AuthForm";
 import { signup } from "@/services/auth.service";
+import { useStore } from "@/store";
 import { toast } from "sonner";
 
 const Signup = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const store = useStore();
 
   const handleSignup = async (_, formData) => {
     setIsLoading(true);
 
     try {
       // Call signup with email
-      await signup(formData.email, formData.password);
+      const result = await signup(formData.email, formData.password);
 
-      console.log("Signup form data:", formData);
-
-      // Store only email in localStorage
-      localStorage.setItem("user", JSON.stringify({ email: formData.email }));
+      // Save user with token
+      const userData = {
+        ...result.data.user,
+        token: result.data.token
+      };
+      store.handleLogin(userData);
 
       toast.success("Account created successfully");
       // Navigate to home page after successful signup
